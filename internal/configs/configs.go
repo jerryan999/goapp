@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bnkamalesh/goapp/internal/pkg/cachestore"
-	"github.com/bnkamalesh/goapp/internal/pkg/datastore"
-	"github.com/bnkamalesh/goapp/internal/server/http"
+	"github.com/jerryan999/goapp/internal/pkg/cachestore"
+	"github.com/jerryan999/goapp/internal/pkg/datastore"
+	"github.com/jerryan999/goapp/internal/server/http"
 )
 
 // Configs struct handles all dependencies required for handling configurations

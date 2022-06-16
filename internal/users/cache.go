@@ -8,7 +8,7 @@ import (
 	"github.com/bnkamalesh/errors"
 	"github.com/gomodule/redigo/redis"
 
-	"github.com/bnkamalesh/goapp/internal/pkg/cachestore"
+	"github.com/jerryan999/goapp/internal/pkg/cachestore"
 )
 
 type userCachestore interface {

@@ -3,8 +3,8 @@ package api
 import (
 	"time"
 
-	"github.com/bnkamalesh/goapp/internal/pkg/logger"
-	"github.com/bnkamalesh/goapp/internal/users"
+	"github.com/jerryan999/goapp/internal/pkg/logger"
+	"github.com/jerryan999/goapp/internal/users"
 )
 
 var (

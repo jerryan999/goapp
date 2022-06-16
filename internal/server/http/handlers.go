@@ -10,7 +10,7 @@ import (
 	"github.com/bnkamalesh/errors"
 	"github.com/bnkamalesh/webgo/v6"
 
-	"github.com/bnkamalesh/goapp/internal/api"
+	"github.com/jerryan999/goapp/internal/api"
 )
 
 // Handlers struct has all the dependencies required for HTTP handlers

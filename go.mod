@@ -1,4 +1,4 @@
-module github.com/bnkamalesh/goapp
+module github.com/jerryan999/goapp
 
 go 1.17
 

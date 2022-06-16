@@ -74,7 +74,7 @@ existingmodulename=${existingmodulename//./\\.}
 # using ; as separator in sed, because `/` is prevalent in most Go module paths
 replacer="s;$existingmodulename;$modulename;g"
 echo " - Replacing module '$unescapedexistingmodule' with '$unescapedmodule'"
-grep -rl $existingmodulename ${basepath}/ --exclude-dir=.git --exclude-dir=vendor --exclude=README.md --exclude=$thisfile | xargs sed -i $replacer
+grep -rl $existingmodulename ${basepath}/ --exclude-dir=.git --exclude-dir=vendor --exclude=README.md --exclude=$thisfile | xargs sed -i '' $replacer
 printf "${fontcolorgreen}${fontbold}= Done${fontnormal}\n"
 
 if [ $a_flag = true ]

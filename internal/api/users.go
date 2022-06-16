@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	"github.com/bnkamalesh/goapp/internal/users"
+	"github.com/jerryan999/goapp/internal/users"
 )
 
 // CreateUser is the API to create/signup a new user

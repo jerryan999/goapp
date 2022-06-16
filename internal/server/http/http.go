@@ -10,7 +10,7 @@ import (
 	"go.elastic.co/apm"
 	"go.elastic.co/apm/module/apmhttp"
 
-	"github.com/bnkamalesh/goapp/internal/api"
+	"github.com/jerryan999/goapp/internal/api"
 )
 
 // HTTP struct holds all the dependencies required for starting HTTP server

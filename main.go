@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/bnkamalesh/goapp/internal/api"
-	"github.com/bnkamalesh/goapp/internal/configs"
-	"github.com/bnkamalesh/goapp/internal/pkg/cachestore"
-	"github.com/bnkamalesh/goapp/internal/pkg/datastore"
-	"github.com/bnkamalesh/goapp/internal/pkg/logger"
-	"github.com/bnkamalesh/goapp/internal/server/http"
-	"github.com/bnkamalesh/goapp/internal/users"
+	"github.com/jerryan999/goapp/internal/api"
+	"github.com/jerryan999/goapp/internal/configs"
+	"github.com/jerryan999/goapp/internal/pkg/cachestore"
+	"github.com/jerryan999/goapp/internal/pkg/datastore"
+	"github.com/jerryan999/goapp/internal/pkg/logger"
+	"github.com/jerryan999/goapp/internal/server/http"
+	"github.com/jerryan999/goapp/internal/users"
 )
 
 func main() {

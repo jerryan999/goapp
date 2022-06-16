@@ -6,10 +6,8 @@ import (
 	"time"
 
 	"github.com/bnkamalesh/webgo/v6"
-	"github.com/bnkamalesh/webgo/v6/middleware/accesslog"
-	"go.elastic.co/apm"
-	"go.elastic.co/apm/module/apmhttp"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jerryan999/goapp/internal/api"
 )
 
@@ -27,51 +25,33 @@ func (h *HTTP) Start() {
 
 // Config holds all the configuration required to start the HTTP server
 type Config struct {
-	Host              string
-	Port              string
-	TemplatesBasePath string
-	ReadTimeout       time.Duration
-	WriteTimeout      time.Duration
-	DialTimeout       time.Duration
+	Host         string
+	Port         string
+	ReadTimeout  time.Duration
+	WriteTimeout time.Duration
+	DialTimeout  time.Duration
 }
 
 // NewService returns an instance of HTTP with all its dependencies set
 func NewService(cfg *Config, a *api.API) (*HTTP, error) {
-	home, err := loadHomeTemplate(cfg.TemplatesBasePath)
-	if err != nil {
-		return nil, err
-	}
-
 	h := &Handlers{
-		api:  a,
-		home: home,
+		api: a,
 	}
+	// Creates a gin router with default middleware:
+	// logger and recovery (crash-free) middleware
+	router := gin.Default()
+	router.GET("/health", h.Health)
 
-	router := webgo.NewRouter(
-		&webgo.Config{
-			Host:            cfg.Host,
-			Port:            cfg.Port,
-			ReadTimeout:     cfg.ReadTimeout,
-			WriteTimeout:    cfg.WriteTimeout,
-			ShutdownTimeout: cfg.WriteTimeout * 2,
-		},
-		h.routes()...,
-	)
-
-	router.Use(accesslog.AccessLog)
-	router.Use(panicRecoverer)
-	tracer, _ := apm.NewTracer("goapp", "v1.1.3")
-
-	serverHandler := apmhttp.Wrap(
-		router,
-		apmhttp.WithRecovery(apmhttp.NewTraceRecovery(
-			tracer,
-		)),
-	)
+	// User groups
+	user_group := router.Group("/users")
+	{
+		user_group.POST("/create", h.CreateUser)
+		user_group.GET("/read/:email", h.ReadUserByEmail)
+	}
 
 	httpServer := &http.Server{
 		Addr:              fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
-		Handler:           serverHandler,
+		Handler:           router,
 		ReadTimeout:       cfg.ReadTimeout,
 		ReadHeaderTimeout: cfg.ReadTimeout,
 		WriteTimeout:      cfg.WriteTimeout,

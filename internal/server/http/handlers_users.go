@@ -1,49 +1,40 @@
 package http
 
 import (
-	"encoding/json"
 	"net/http"
 
-	"github.com/bnkamalesh/errors"
-	"github.com/bnkamalesh/webgo/v6"
+	"github.com/gin-gonic/gin"
 
 	"github.com/jerryan999/goapp/internal/users"
 )
 
 // CreateUser is the HTTP handler to create a new user
 // This handler does not use any framework, instead just the standard library
-func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) error {
+func (h *Handlers) CreateUser(c *gin.Context) {
+	ctx := c.Request.Context()
 	u := new(users.User)
-	err := json.NewDecoder(r.Body).Decode(u)
-	if err != nil {
-		return errors.InputBodyErr(err, "invalid JSON provided")
+	if err := c.BindJSON(u); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	createdUser, err := h.api.CreateUser(r.Context(), u)
+	_, err := h.api.CreateUser(ctx, u)
 	if err != nil {
-		return err
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-
-	b, err := json.Marshal(createdUser)
-	if err != nil {
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(b)
-	return err
 }
 
 // ReadUserByEmail is the HTTP handler to read an existing user by email
-func (h *Handlers) ReadUserByEmail(w http.ResponseWriter, r *http.Request) error {
-	wctx := webgo.Context(r)
-	email := wctx.Params()["email"]
+func (h *Handlers) ReadUserByEmail(c *gin.Context) {
+	ctx := c.Request.Context()
+	email := c.Param("email")
 
-	out, err := h.api.ReadUserByEmail(r.Context(), email)
+	u, err := h.api.ReadUserByEmail(ctx, email)
 	if err != nil {
-		return err
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
-	webgo.R200(w, out)
-	return nil
+	c.JSON(http.StatusOK, u)
 }

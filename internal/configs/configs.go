@@ -1,8 +1,6 @@
 package configs
 
 import (
-	"os"
-	"strings"
 	"time"
 
 	"github.com/jerryan999/goapp/internal/pkg/cachestore"
@@ -17,11 +15,10 @@ type Configs struct {
 // HTTP returns the configuration required for HTTP package
 func (cfg *Configs) HTTP() (*http.Config, error) {
 	return &http.Config{
-		TemplatesBasePath: strings.TrimSpace(os.Getenv("TEMPLATES_BASEPATH")),
-		Port:              "8080",
-		ReadTimeout:       time.Second * 5,
-		WriteTimeout:      time.Second * 5,
-		DialTimeout:       time.Second * 3,
+		Port:         "8080",
+		ReadTimeout:  time.Second * 5,
+		WriteTimeout: time.Second * 5,
+		DialTimeout:  time.Second * 3,
 	}, nil
 }
 

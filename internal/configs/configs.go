@@ -25,20 +25,11 @@ func (cfg *Configs) HTTP() (*http.Config, error) {
 // Datastore returns datastore configuration
 func (cfg *Configs) Datastore() (*datastore.Config, error) {
 	return &datastore.Config{
-		Host:   "localhost",
-		Port:   "5432",
-		Driver: "postgres",
-
-		StoreName: "goapp",
-		Username:  "gauser",
-		Password:  "gauserpassword",
-
-		SSLMode: "",
-
+		Host:         "localhost",
+		Port:         "27017",
+		Username:     "",
+		Password:     "",
 		ConnPoolSize: 10,
-		ReadTimeout:  time.Second * 5,
-		WriteTimeout: time.Second * 5,
-		IdleTimeout:  time.Second * 60,
 		DialTimeout:  time.Second * 10,
 	}, nil
 }

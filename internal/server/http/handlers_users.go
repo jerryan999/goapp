@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,12 @@ func (h *Handlers) CreateUser(c *gin.Context) {
 
 	_, err := h.api.CreateUser(ctx, u)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if errors.Is(err, users.ErrUserValidation) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": users.ErrUserValidation.ErrorWithoutFileLine()})
+		} else {
+
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
+		}
 		return
 	}
 }
@@ -28,11 +34,14 @@ func (h *Handlers) CreateUser(c *gin.Context) {
 // ReadUserByEmail is the HTTP handler to read an existing user by email
 func (h *Handlers) ReadUserByEmail(c *gin.Context) {
 	ctx := c.Request.Context()
-	email := c.Param("email")
-
+	email := c.Query("email")
 	u, err := h.api.ReadUserByEmail(ctx, email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if errors.Is(err, users.ErrUserNotFound) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": users.ErrUserNotFound.ErrorWithoutFileLine()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
+		}
 		return
 	}
 

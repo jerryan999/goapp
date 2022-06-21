@@ -2,15 +2,21 @@ package users
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"strings"
 	"time"
 
-	"github.com/bnkamalesh/errors"
 	"github.com/gomodule/redigo/redis"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/jerryan999/goapp/internal/pkg/cachestore"
 	"github.com/jerryan999/goapp/internal/pkg/logger"
+)
+
+var (
+	ErrUserNotFound   = errors.New("user not found")
+	ErrUserValidation = errors.New("validation error")
 )
 
 // User holds all data required to represent a user
@@ -45,7 +51,7 @@ func (u *User) Sanitize() {
 // Validate is used to validate the fields of User
 func (u *User) Validate() error {
 	if u.Email == "" {
-		return nil
+		return fmt.Errorf("validate:%w", ErrUserValidation)
 	}
 
 	err := validateEmail(u.Email)
@@ -59,14 +65,12 @@ func (u *User) Validate() error {
 func validateEmail(email string) error {
 	parts := strings.Split(email, "@")
 	if len(parts) != 2 {
-		return errors.Validation("invalid email address provided")
+		return fmt.Errorf("validateEmail: %w, email: %s", ErrUserValidation, email)
 	}
 
 	return nil
 }
 
-// Users struct holds all the dependencies required for the users package. And exposes all services
-// provided by this package as its methods
 type Users struct {
 	logHandler logger.Logger
 	cachestore userCachestore
@@ -80,11 +84,17 @@ func (us *Users) CreateUser(ctx context.Context, u *User) (*User, error) {
 
 	err := u.Validate()
 	if err != nil {
+		if errors.Is(err, ErrUserValidation) {
+			us.logHandler.Warn(err.Error())
+		} else {
+			us.logHandler.Error(err.Error())
+		}
 		return nil, err
 	}
 
 	err = us.store.Create(ctx, u)
 	if err != nil {
+		us.logHandler.Error(err.Error())
 		return nil, err
 	}
 
@@ -96,6 +106,7 @@ func (us *Users) ReadByEmail(ctx context.Context, email string) (*User, error) {
 	email = strings.TrimSpace(email)
 	err := validateEmail(email)
 	if err != nil {
+		us.logHandler.Info("ReadByEmail: %s", err.Error())
 		return nil, err
 	}
 
@@ -112,7 +123,7 @@ func (us *Users) ReadByEmail(ctx context.Context, email string) (*User, error) {
 
 	u, err = us.store.ReadByEmail(ctx, email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("readByEmail: %w", ErrUserNotFound)
 	}
 
 	err = us.cachestore.SetUser(ctx, u.Email, u)
@@ -127,8 +138,8 @@ func (us *Users) ReadByEmail(ctx context.Context, email string) (*User, error) {
 
 // NewService initializes the Users struct with all its dependencies and returns a new instance
 // all dependencies of Users should be sent as arguments of NewService
-func NewService(l logger.Logger, pqdriver *pgxpool.Pool, redispool *redis.Pool) (*Users, error) {
-	ustore, err := newStore(pqdriver)
+func NewService(l logger.Logger, m *mongo.Client, redispool *redis.Pool) (*Users, error) {
+	ustore, err := newStore(m)
 	if err != nil {
 		return nil, err
 	}

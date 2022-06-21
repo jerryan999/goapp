@@ -2,11 +2,15 @@ package users
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/bnkamalesh/errors"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+var (
+	Database       = "goapp"
+	UserCollection = "user"
 )
 
 type store interface {
@@ -15,82 +19,30 @@ type store interface {
 }
 
 type userStore struct {
-	qbuilder  squirrel.StatementBuilderType
-	pqdriver  *pgxpool.Pool
-	tableName string
+	mongoClient    *mongo.Client
+	userCollection *mongo.Collection
 }
 
 func (us *userStore) Create(ctx context.Context, u *User) error {
-	query, args, err := us.qbuilder.Insert(us.tableName).SetMap(map[string]interface{}{
-		"firstName": u.FirstName,
-		"lastName":  u.LastName,
-		"mobile":    u.Mobile,
-		"email":     u.Email,
-		"createdAt": u.CreatedAt,
-		"updatedAt": u.UpdatedAt,
-	}).ToSql()
+	_, err := us.userCollection.InsertOne(ctx, u)
 	if err != nil {
-		return errors.InternalErr(err, errors.DefaultMessage)
+		return fmt.Errorf("userstore create: %w", err)
 	}
-
-	_, err = us.pqdriver.Exec(ctx, query, args...)
-	if err != nil {
-		return errors.InternalErr(err, errors.DefaultMessage)
-	}
-
 	return nil
 }
 
 func (us *userStore) ReadByEmail(ctx context.Context, email string) (*User, error) {
-	query, args, err := us.qbuilder.Select(
-		"firstName",
-		"lastName",
-		"mobile",
-		"email",
-		"createdAt",
-		"updatedAt",
-	).From(
-		us.tableName,
-	).Where(
-		squirrel.Eq{
-			"email": email,
-		},
-	).ToSql()
+	var u User
+	err := us.userCollection.FindOne(ctx, bson.D{{Key: "email", Value: email}}).Decode(&u)
 	if err != nil {
-		return nil, errors.InternalErr(err, errors.DefaultMessage)
+		return nil, fmt.Errorf("userstore readbyEmail: %w", err)
 	}
-
-	user := new(User)
-	firstName := new(sql.NullString)
-	lastName := new(sql.NullString)
-	mobile := new(sql.NullString)
-	storeEmail := new(sql.NullString)
-
-	row := us.pqdriver.QueryRow(ctx, query, args...)
-	err = row.Scan(
-		firstName,
-		lastName,
-		mobile,
-		storeEmail,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
-	if err != nil {
-		return nil, errors.InternalErr(err, errors.DefaultMessage)
-	}
-
-	user.FirstName = firstName.String
-	user.LastName = lastName.String
-	user.Mobile = mobile.String
-	user.Email = storeEmail.String
-
-	return user, nil
+	return &u, nil
 }
 
-func newStore(pqdriver *pgxpool.Pool) (*userStore, error) {
+func newStore(mongoClient *mongo.Client) (*userStore, error) {
 	return &userStore{
-		pqdriver:  pqdriver,
-		qbuilder:  squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
-		tableName: "Users",
+		mongoClient:    mongoClient,
+		userCollection: mongoClient.Database(Database).Collection(UserCollection),
 	}, nil
 }

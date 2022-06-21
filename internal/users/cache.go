@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/bnkamalesh/errors"
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/jerryan999/goapp/internal/pkg/cachestore"
@@ -35,7 +34,7 @@ func (uc *usercache) SetUser(ctx context.Context, email string, u *User) error {
 
 	conn, err := uc.conn(ctx)
 	if err != nil {
-		return errors.InternalErr(err, errors.DefaultMessage)
+		return fmt.Errorf("setUser: %w", err)
 	}
 
 	// it is safe to ignore error here because User struct has no field which can cause the marshal to fail
@@ -44,13 +43,13 @@ func (uc *usercache) SetUser(ctx context.Context, email string, u *User) error {
 	key := userCacheKey(email)
 	_, err = conn.Do("SET", key, payload)
 	if err != nil {
-		return errors.InternalErr(err, errors.DefaultMessage)
+		return fmt.Errorf("setUser: %w", err)
 	}
 
 	// expiry in seconds. 1hr
 	_, err = conn.Do("EXPIRE", key, 60*60*1)
 	if err != nil {
-		return errors.InternalErr(err, errors.DefaultMessage)
+		return fmt.Errorf("setUser: %w", err)
 	}
 
 	return nil
@@ -63,14 +62,14 @@ func (uc *usercache) ReadUserByEmail(ctx context.Context, email string) (*User, 
 
 	conn, err := uc.conn(ctx)
 	if err != nil {
-		return nil, errors.InternalErr(err, errors.DefaultMessage)
+		return nil, fmt.Errorf("readUserByEmail: %w", err)
 	}
 
 	key := userCacheKey(email)
 
 	payload, err := conn.Do("GET", key)
 	if err != nil {
-		return nil, errors.InternalErr(err, errors.DefaultMessage)
+		return nil, fmt.Errorf("readUserByEmail: %w", err)
 	}
 	if payload == nil {
 		return nil, cachestore.ErrCacheMiss
@@ -80,7 +79,7 @@ func (uc *usercache) ReadUserByEmail(ctx context.Context, email string) (*User, 
 	u := new(User)
 	err = json.Unmarshal(payloadBytes, u)
 	if err != nil {
-		return nil, errors.InternalErr(err, errors.DefaultMessage)
+		return nil, fmt.Errorf("readUserByEmail: %w", err)
 	}
 
 	return u, nil

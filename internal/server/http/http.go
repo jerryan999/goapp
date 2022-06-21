@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bnkamalesh/webgo/v6"
-
 	"github.com/gin-gonic/gin"
 	"github.com/jerryan999/goapp/internal/api"
 )
@@ -19,7 +17,6 @@ type HTTP struct {
 
 // Start starts the HTTP server
 func (h *HTTP) Start() {
-	webgo.LOGHANDLER.Info("HTTP server, listening on", h.cfg.Host, h.cfg.Port)
 	h.server.ListenAndServe()
 }
 
@@ -46,7 +43,7 @@ func NewService(cfg *Config, a *api.API) (*HTTP, error) {
 	user_group := router.Group("/users")
 	{
 		user_group.POST("/create", h.CreateUser)
-		user_group.GET("/read/:email", h.ReadUserByEmail)
+		user_group.GET("/retrieve", h.ReadUserByEmail)
 	}
 
 	httpServer := &http.Server{

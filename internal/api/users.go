@@ -8,22 +8,10 @@ import (
 
 // CreateUser is the API to create/signup a new user
 func (a *API) CreateUser(ctx context.Context, u *users.User) (*users.User, error) {
-	u, err := a.users.CreateUser(ctx, u)
-	if err != nil {
-		a.logger.Error(err)
-		return nil, err
-	}
-
-	return u, nil
+	return a.users.CreateUser(ctx, u)
 }
 
 // ReadUserByEmail is the API to read an existing user by their email
 func (a *API) ReadUserByEmail(ctx context.Context, email string) (*users.User, error) {
-	u, err := a.users.ReadByEmail(ctx, email)
-	if err != nil {
-		a.logger.Error(err)
-		return nil, err
-	}
-
-	return u, nil
+	return a.users.ReadByEmail(ctx, email)
 }

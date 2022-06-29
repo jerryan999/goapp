@@ -1,58 +1,64 @@
 package configs
 
 import (
-	"time"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 
 	"github.com/jerryan999/goapp/internal/pkg/cachestore"
 	"github.com/jerryan999/goapp/internal/pkg/datastore"
 	"github.com/jerryan999/goapp/internal/server/http"
 )
 
-// Configs struct handles all dependencies required for handling configurations
-type Configs struct {
+// AppConfigs struct handles all dependencies required for handling configurations
+type AppConfigs struct {
+	data map[string]json.RawMessage
 }
 
 // HTTP returns the configuration required for HTTP package
-func (cfg *Configs) HTTP() (*http.Config, error) {
-	return &http.Config{
-		Port:         "8080",
-		ReadTimeout:  time.Second * 5,
-		WriteTimeout: time.Second * 5,
-		DialTimeout:  time.Second * 3,
-	}, nil
+func (cfg *AppConfigs) HTTP() (*http.Config, error) {
+	var httpConfig http.Config
+	err := json.Unmarshal(cfg.data["http"], &httpConfig)
+	if err != nil {
+		return nil, fmt.Errorf("http config: %w", err)
+	}
+	return &httpConfig, nil
 }
 
 // Datastore returns datastore configuration
-func (cfg *Configs) Datastore() (*datastore.Config, error) {
-	return &datastore.Config{
-		Host:         "localhost",
-		Port:         "27017",
-		Username:     "",
-		Password:     "",
-		ConnPoolSize: 10,
-		DialTimeout:  time.Second * 10,
-	}, nil
+func (cfg *AppConfigs) Datastore() (*datastore.Config, error) {
+	var dsConfig datastore.Config
+	err := json.Unmarshal(cfg.data["mongo"], &dsConfig)
+	if err != nil {
+		return nil, fmt.Errorf("datastore config: %w", err)
+	}
+	return &dsConfig, nil
 }
 
 // Cachestore returns the configuration required for cache
-func (cfg *Configs) Cachestore() (*cachestore.Config, error) {
-	return &cachestore.Config{
-		Host: "",
-		Port: "6379",
-
-		StoreName: "0",
-		Username:  "",
-		Password:  "",
-
-		PoolSize:     8,
-		IdleTimeout:  time.Second * 5,
-		ReadTimeout:  time.Second * 5,
-		WriteTimeout: time.Second * 5,
-		DialTimeout:  time.Second * 5,
-	}, nil
+func (cfg *AppConfigs) Cachestore() (*cachestore.Config, error) {
+	var cacheConfig cachestore.Config
+	err := json.Unmarshal(cfg.data["redis"], &cacheConfig)
+	if err != nil {
+		return nil, fmt.Errorf("cachestore config: %w", err)
+	}
+	return &cacheConfig, nil
 }
 
-// NewService returns an instance of Config with all the required dependencies initialized
-func NewService() (*Configs, error) {
-	return &Configs{}, nil
+func (cfg *AppConfigs) loadJsonConfig(yamlFilePath string) error {
+	content, err := ioutil.ReadFile(yamlFilePath)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(content, &cfg.data)
+	return err
+}
+
+func NewService(jsonFilePath string) (*AppConfigs, error) {
+	var cfg AppConfigs
+	err := cfg.loadJsonConfig(jsonFilePath)
+	if err != nil {
+		return nil, err
+	}
+	return &cfg, nil
 }

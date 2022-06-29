@@ -2,7 +2,6 @@ package datastore
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -12,22 +11,22 @@ import (
 
 // Config struct holds all the configurations required the datastore package
 type Config struct {
-	Host string `json:"host,omitempty"`
-	Port string `json:"port,omitempty"`
+	Host string `json:"host"`
+	Port int    `json:"port"`
 
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
+	Username string `json:"user_name"`
+	Password string `json:"password"`
 
-	ConnPoolSize uint          `json:"connPoolSize,omitempty"`
-	DialTimeout  time.Duration `json:"dialTimeout,omitempty"`
+	ConnPoolSize uint `json:"conn_pool_size"`
+	DialTimeout  int  `json:"dial_timeout"`
 }
 
 // ConnURL returns the connection URL
 func (cfg *Config) ConnURL() string {
 	if cfg.Username != "" {
-		return fmt.Sprintf("mongodb://%s:%s@%s:%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port)
+		return fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.Username, cfg.Password, cfg.Host, cfg.Port)
 	}
-	return fmt.Sprintf("mongodb://%s:%s", cfg.Host, cfg.Port)
+	return fmt.Sprintf("mongodb://%s:%d", cfg.Host, cfg.Port)
 }
 
 // NewService returns a new instance of PGX pool
@@ -38,20 +37,20 @@ func NewService(cfg *Config) (*mongo.Client, error) {
 
 	client, err := mongo.NewClient(o)
 	if err != nil {
-		return nil, errors.New("create mongo client failed: %w")
+		return nil, fmt.Errorf("create mongo client failed: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), cfg.DialTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.DialTimeout)*time.Second)
 	defer cancel()
 
 	err = client.Connect(ctx)
 	if err != nil {
-		return nil, errors.New("connect to mongo failed: %w")
+		return nil, fmt.Errorf("connect to mongo failed: %w", err)
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		return nil, errors.New("ping to mongo failed: %w")
+		return nil, fmt.Errorf("ping to mongo failed: %w", err)
 	}
 	return client, nil
 }

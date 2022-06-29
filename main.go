@@ -13,7 +13,8 @@ import (
 func main() {
 	l := logger.New("goapp", "v1.0.0", 1)
 
-	cfg, err := configs.NewService()
+	jsonFilePath := "./config.json"
+	cfg, err := configs.NewService(jsonFilePath)
 	if err != nil {
 		l.Fatal(err.Error())
 		return
@@ -42,6 +43,7 @@ func main() {
 		// Cache could be something we'd be willing to tolerate if not available
 		// Though this is strictly based on how critical cache is to your application
 		l.Error(err)
+		return
 	}
 
 	us, err := users.NewService(l, mongoClient, redispool)

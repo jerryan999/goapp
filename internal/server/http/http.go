@@ -22,11 +22,11 @@ func (h *HTTP) Start() {
 
 // Config holds all the configuration required to start the HTTP server
 type Config struct {
-	Host         string
-	Port         string
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-	DialTimeout  time.Duration
+	Host               string `json:"host"`
+	Port               int    `json:"port"`
+	ReadTimeoutSecond  int    `json:"read_timeout_second"`
+	WriteTimeoutSecond int    `json:"write_timeout_second"`
+	DialTimeoutSecond  int    `json:"dial_timeout_second"`
 }
 
 // NewService returns an instance of HTTP with all its dependencies set
@@ -47,12 +47,12 @@ func NewService(cfg *Config, a *api.API) (*HTTP, error) {
 	}
 
 	httpServer := &http.Server{
-		Addr:              fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+		Addr:              fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 		Handler:           router,
-		ReadTimeout:       cfg.ReadTimeout,
-		ReadHeaderTimeout: cfg.ReadTimeout,
-		WriteTimeout:      cfg.WriteTimeout,
-		IdleTimeout:       cfg.ReadTimeout * 2,
+		ReadTimeout:       time.Second * time.Duration(cfg.ReadTimeoutSecond),
+		ReadHeaderTimeout: time.Second * time.Duration(cfg.ReadTimeoutSecond),
+		WriteTimeout:      time.Second * time.Duration(cfg.WriteTimeoutSecond),
+		IdleTimeout:       time.Second * time.Duration(cfg.DialTimeoutSecond),
 	}
 
 	return &HTTP{

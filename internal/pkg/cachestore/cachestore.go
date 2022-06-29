@@ -18,18 +18,18 @@ var (
 
 // Config holds all the configuration required for this package
 type Config struct {
-	Host string
-	Port string
+	Host string `json:"host"`
+	Port int    `json:"port"`
 
-	StoreName string
-	Username  string
-	Password  string
+	StoreName string `json:"store_name"`
+	Username  string `json:"user_name"`
+	Password  string `json:"password"`
 
-	PoolSize     int
-	IdleTimeout  time.Duration
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-	DialTimeout  time.Duration
+	PoolSize     int `json:"pool_size"`
+	IdleTimeout  int `json:"idle_timeout"`
+	ReadTimeout  int `json:"read_timeout"`
+	WriteTimeout int `json:"write_timeout"`
+	DialTimeout  int `json:"dial_timeout"`
 }
 
 // NewService returns an instance of redis.Pool with all the required configurations set
@@ -38,17 +38,17 @@ func NewService(cfg *Config) (*redis.Pool, error) {
 	rpool := &redis.Pool{
 		MaxIdle:         cfg.PoolSize,
 		MaxActive:       cfg.PoolSize,
-		IdleTimeout:     cfg.IdleTimeout,
+		IdleTimeout:     time.Duration(cfg.IdleTimeout) * time.Second,
 		Wait:            true,
-		MaxConnLifetime: cfg.IdleTimeout * 2,
+		MaxConnLifetime: time.Duration(cfg.DialTimeout) * time.Second,
 		Dial: func() (redis.Conn, error) {
 			return redis.Dial(
 				"tcp",
-				fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
-				redis.DialReadTimeout(cfg.ReadTimeout),
-				redis.DialWriteTimeout(cfg.WriteTimeout),
+				fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+				redis.DialReadTimeout(time.Duration(cfg.ReadTimeout)*time.Second),
+				redis.DialWriteTimeout(time.Duration(cfg.WriteTimeout)*time.Second),
 				redis.DialPassword(cfg.Password),
-				redis.DialConnectTimeout(cfg.DialTimeout),
+				redis.DialConnectTimeout(time.Duration(cfg.DialTimeout)*time.Second),
 				redis.DialDatabase(db),
 			)
 		},

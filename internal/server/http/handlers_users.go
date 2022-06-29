@@ -22,7 +22,7 @@ func (h *Handlers) CreateUser(c *gin.Context) {
 	_, err := h.api.CreateUser(ctx, u)
 	if err != nil {
 		if errors.Is(err, users.ErrUserValidation) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": users.ErrUserValidation.ErrorWithoutFileLine()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": users.ErrUserValidation.Error()})
 		} else {
 
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
@@ -38,7 +38,7 @@ func (h *Handlers) ReadUserByEmail(c *gin.Context) {
 	u, err := h.api.ReadUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, users.ErrUserNotFound) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": users.ErrUserNotFound.ErrorWithoutFileLine()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": users.ErrUserNotFound.Error()})
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "server error"})
 		}

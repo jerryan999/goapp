@@ -25,10 +25,10 @@ func main() {
 		return
 	}
 
-	pqdriver, err := datastore.NewService(dscfg)
+	mongoClient, err := datastore.NewService(dscfg)
 	if err != nil {
-		// l.Fatal(err.Error())
-		// return
+		l.Fatal(err.Error())
+		return
 	}
 
 	cacheCfg, err := cfg.Cachestore()
@@ -44,7 +44,7 @@ func main() {
 		l.Error(err)
 	}
 
-	us, err := users.NewService(l, pqdriver, redispool)
+	us, err := users.NewService(l, mongoClient, redispool)
 	if err != nil {
 		l.Fatal(err.Error())
 		return

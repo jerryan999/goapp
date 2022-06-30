@@ -26,8 +26,6 @@ USER appuser
 COPY --from=builder /app/internal/server/http/web /home/appuser/app/web
 COPY --from=builder /app/appbin /home/appuser/app
 
-ENV TEMPLATES_BASEPATH=/home/appuser/app/web/templates
-
 WORKDIR /home/appuser/app
 
 # Since running as a non-root user, port bindings < 1024 are not possible

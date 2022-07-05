@@ -17,8 +17,8 @@ type Config struct {
 	Username string `json:"user_name"`
 	Password string `json:"password"`
 
-	ConnPoolSize uint `json:"conn_pool_size"`
-	DialTimeout  int  `json:"dial_timeout"`
+	ConnPoolSize int `json:"conn_pool_size"`
+	DialTimeout  int `json:"dial_timeout"`
 }
 
 // ConnURL returns the connection URL

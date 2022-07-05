@@ -12,9 +12,7 @@ import (
 
 func main() {
 	l := logger.New("goapp", "v1.0.0", 1)
-
-	jsonFilePath := "./config.json"
-	cfg, err := configs.NewService(jsonFilePath)
+	cfg, err := configs.NewService()
 	if err != nil {
 		l.Fatal(err.Error())
 		return

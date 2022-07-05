@@ -3,13 +3,10 @@ FROM golang:1.18 AS builder
 COPY ${PWD} /app
 WORKDIR /app
 
-# Toggle CGO on your app requirement
 RUN CGO_ENABLED=0 go build -ldflags '-s -w -extldflags "-static"' -o /app/appbin *.go
-# Use below if using vendor
-# RUN CGO_ENABLED=0 go build -mod=vendor -ldflags '-extldflags "-static"' -o /app/appbin *.go
+
 
 FROM debian:stable-slim
-LABEL MAINTAINER Author <author@example.com>
 
 # Following commands are for installing CA certs (for proper functioning of HTTPS and other TLS)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -23,9 +20,7 @@ RUN adduser --home "/appuser" --disabled-password appuser \
     --gecos "appuser,-,-,-"
 USER appuser
 
-COPY --from=builder /app/internal/server/http/web /home/appuser/app/web
 COPY --from=builder /app/appbin /home/appuser/app
-
 WORKDIR /home/appuser/app
 
 # Since running as a non-root user, port bindings < 1024 are not possible

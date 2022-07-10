@@ -41,16 +41,18 @@ func (cfg *AppConfigs) Datastore() (*datastore.Config, error) {
 // Cachestore returns the configuration required for cache
 func (cfg *AppConfigs) Cachestore() (*cachestore.Config, error) {
 	var cacheConfig cachestore.Config = cachestore.Config{
-		Host:         getStr(os.Getenv("CACHE_HOST"), "localhost"),
-		Port:         GetInt(os.Getenv("CACHE_PORT"), 6379),
-		Username:     getStr(os.Getenv("CACHE_USER"), ""),
-		Password:     getStr(os.Getenv("CACHE_PASSWORD"), ""),
+		Host: getStr(os.Getenv("CACHE_HOST"), "127.0.0.1"),
+		Port: GetInt(os.Getenv("CACHE_PORT"), 6379),
+
+		StoreName: getStr(os.Getenv("CACHE_STORE_NAME"), "0"),
+		Username:  getStr(os.Getenv("CACHE_USER"), ""),
+		Password:  getStr(os.Getenv("CACHE_PASSWORD"), ""),
+
 		PoolSize:     GetInt(os.Getenv("CACHE_POOL_SIZE"), 10),
 		DialTimeout:  GetInt(os.Getenv("CACHE_DIAL_TIMEOUT"), 5),
 		ReadTimeout:  GetInt(os.Getenv("CACHE_READ_TIMEOUT"), 5),
 		WriteTimeout: GetInt(os.Getenv("CACHE_WRITE_TIMEOUT"), 5),
 		IdleTimeout:  GetInt(os.Getenv("CACHE_IDLE_TIMEOUT"), 5),
-		StoreName:    getStr(os.Getenv("CACHE_STORE_NAME"), "0"),
 	}
 	return &cacheConfig, nil
 }

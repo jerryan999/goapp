@@ -1,9 +1,9 @@
 FROM golang:1.18 AS builder
 
-COPY ${PWD} /app
+COPY . /app
 WORKDIR /app
 
-RUN CGO_ENABLED=0 go build -ldflags '-s -w -extldflags "-static"' -o /app/appbin *.go
+# RUN CGO_ENABLED=0 go build -ldflags '-s -w -extldflags "-static"' -o /app/appbin main.go
 
 
 FROM debian:stable-slim
